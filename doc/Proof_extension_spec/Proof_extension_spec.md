@@ -9,7 +9,7 @@ Yaga is a SMT solver based on the [MCSat](mcsat) paradigm. It is desirable for S
 pair an UNSAT answer with a proof that certifies the correctness and can be checked in a dedicated checker
 program (which is algorithmically simpler, and thus easier to formally verify.)  
 This project will extend Yaga with the capability to produce ([partial](8.1-preprocessing)) proofs 
-in some specified format (most likely [Alethe](alethe), possibly also [FRAT](frat) or similar clausal format) 
+in some specified format (most likely [Alethe](#alethe), possibly also [FRAT](#frat) or similar clausal format) 
 in a way that allows support for other formats to be added in the future.
 ### 1.2 Technologies used
 Inherited from Yaga - C++ and Catch2 testing framework.  
