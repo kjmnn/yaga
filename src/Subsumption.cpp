@@ -10,7 +10,13 @@ void Subsumption::minimize(Trail const& trail, Clause& clause)
         if (eval(model, ~lit) == true)
         {
             auto reason = trail.reason(lit.var());
-            return reason && selfsubsumes(*reason, clause, ~lit);
+            bool redundant = reason && selfsubsumes(*reason, clause, ~lit);
+            if (redundant)
+            {
+                // Simple self-subsumption minimization is just resolution
+                tracer.resolve_conflict(clause.id(), reason->id());
+            }
+            return redundant;
         }
         return false;
     };
@@ -127,6 +133,7 @@ void Subsumption::remove_subsumed(Subsumption::Clause_ptr clause)
     {
         if (other_ptr != clause && subsumes(clause, other_ptr))
         {
+            tracer.delete_clause(*other_ptr);
             other_ptr->clear();
         }
     }

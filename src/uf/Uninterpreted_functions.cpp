@@ -34,8 +34,9 @@ void Uninterpreted_functions::Assignment_watchlist::on_assign(Trail& trail) {
 
 Uninterpreted_functions::Uninterpreted_functions(terms::Term_manager const& tm,
                                                  std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, int> > r_m,
-                                                 std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > b_m)
-    : term_manager(tm), rational_vars(r_m), bool_vars(b_m) {}
+                                                 std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > b_m,
+                                                 proof::Tracer_wrapper tracer)
+    : term_manager(tm), rational_vars(r_m), bool_vars(b_m), tracer(tracer) {}
 
 std::vector<Clause> Uninterpreted_functions::propagate(Database&, Trail& trail) {
     std::vector<Clause> result;
@@ -362,6 +363,7 @@ std::vector<Clause> Uninterpreted_functions::add_function_value(terms::term_t t,
 
     assert_equality(t, current_app_term, trail, result);
 
+    tracer.init_conflict(result, proof::conflict::Uf_congruence{});
     return {result};
 }
 

@@ -149,6 +149,14 @@ std::vector<Clause> Bool_theory::propagate(Database& db, Trail& trail)
         }
     }
 
+    if (tracer)
+    {
+        for (auto const& conflict : conflicts)
+        {
+            tracer.init_conflict(conflict, proof::conflict::Boolean{});
+        }
+    }
+
     return conflicts;
 }
 

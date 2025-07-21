@@ -193,6 +193,8 @@ std::optional<Clause> Bound_conflict_analysis::analyze(Trail& trail, Bounds& bou
 
     assert(conflict.size() >= 2);
     assert(eval(models.boolean(), conflict) == false);
+    // TODO: add proof
+    lra->tracer().init_conflict(conflict, proof::conflict::Lra_bounds{});
     return conflict;
 }
 
@@ -242,7 +244,10 @@ std::optional<Clause> Inequality_conflict_analysis::analyze(Trail& trail, Bounds
     }
 
     assert(eval(models.boolean(), analysis.conflict()) == false);
-    return analysis.finish();
+    auto& conflict = analysis.finish();
+    // TODO: add proof
+    lra->tracer().init_conflict(conflict, proof::conflict::Lra_disequality{});
+    return conflict;
 }
 
 } // namespace yaga

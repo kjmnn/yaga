@@ -6,31 +6,20 @@
 #include <vector>
 #include <ranges>
 
+#include "Bool_phase.h"
 #include "Database.h"
 #include "Literal.h"
 #include "Literal_map.h"
 #include "Model.h"
 #include "Theory.h"
+#include "Tracer_wrapper.h"
 #include "Trail.h"
 
 namespace yaga {
 
-enum class Phase {
-    /** Always decide true for boolean variables.
-     */
-    positive,
-
-    /** Always decide false for boolean variables.
-     */
-    negative,
-
-    /** Cache values of boolean variables.
-     */
-    cache,
-};
-
 class Bool_theory : public Theory {
 public:
+    Bool_theory(proof::Tracer_wrapper tracer = {}) : tracer(tracer) {}
     virtual ~Bool_theory() = default;
 
     /** Run BCP to exhaustion
@@ -115,6 +104,8 @@ private:
     std::vector<bool> phase;
     // phase strategy
     Phase var_phase{Phase::positive};
+    // tracer for proof production (optional)
+    proof::Tracer_wrapper tracer;
 
     /** Propagate assigned literals at current decision level in @p trail
      *

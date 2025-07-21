@@ -2,9 +2,10 @@
 
 namespace yaga {
 
-Solver::Solver(const terms::Term_manager& tm) : solver_trail(dispatcher), term_manager(tm)
+Solver::Solver(const terms::Term_manager& tm, proof::Tracer_wrapper tracer) 
+    : solver_trail(dispatcher), term_manager(tm), tracer_(tracer)
 {
-    subsumption = std::make_unique<Subsumption>();
+    subsumption = std::make_unique<Subsumption>(tracer);
     dispatcher.add(subsumption.get());
 }
 
@@ -25,7 +26,10 @@ std::pair<std::vector<Clause>, int> Solver::analyze_conflicts(std::vector<Clause
         auto [clause, clause_level] =
             analysis.analyze(trail(), std::move(conflict), [&](auto const& other_clause) {
                 dispatcher.on_conflict_resolved(db(), trail(), other_clause);
+                tracer_.resolve_conflict(conflict.id(), other_clause.id());
             });
+        
+        tracer_.rename_conflict(conflict.id(), clause.id());
 
         if (!clause.empty())
         {
@@ -76,14 +80,17 @@ Solver::Clause_range Solver::learn(std::vector<Clause>&& clauses)
         }), clauses.end());
     }
 
-    for (auto const& clause : clauses)
+    for (auto&& clause : clauses)
     {
         ++total_learned_clauses;
+        tracer_.learn_clause(clause);
         // add the clause to database
         auto& learned_ref = db().learn_clause(std::move(clause));
         // trigger events
         dispatcher.on_learned_clause(db(), trail(), learned_ref);
     }
+    // Discard conflict clauses that were not learned
+    tracer_.finish_conflicts();
     return {db().learned().begin() + (db().learned().size() - clauses.size()), 
             db().learned().end()};
 }
@@ -188,13 +195,15 @@ void Solver::restart()
 Solver::Result Solver::check()
 {
     init();
+    tracer_.begin_proof(database);
 
     for (;;)
     {
         auto conflicts = propagate();
         if (!conflicts.empty())
         {
-            if (trail().decision_level() == 0)
+            // No decisions involved => no need to analyze unless we want a proof
+            if (trail().decision_level() == 0 && !tracer_)
             {
                 return Result::unsat;
             }
@@ -202,6 +211,10 @@ Solver::Result Solver::check()
             auto [learned, level] = analyze_conflicts(std::move(conflicts));
             if (std::any_of(learned.begin(), learned.end(), [](auto const& clause) { return clause.empty(); }))
             {
+                auto empty = std::find_if(learned.begin(), learned.end(),
+                                          [](auto const& clause) { return clause.empty(); });
+                tracer_.derive_final(*empty);
+                tracer_.end_proof(database);
                 return Result::unsat;
             }
 
@@ -220,6 +233,7 @@ Solver::Result Solver::check()
             auto var = pick_variable();
             if (!var)
             {
+                // TODO clean up proof file?
                 return Result::sat;
             }
             decide(var.value());

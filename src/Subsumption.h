@@ -14,6 +14,7 @@
 #include "Literal.h"
 #include "Literal_map.h"
 #include "Model.h"
+#include "Tracer_wrapper.h"
 #include "Trail.h"
 #include "Variable.h"
 
@@ -25,6 +26,8 @@ namespace yaga {
  */
 class Subsumption final : public Event_listener {
 public:
+    Subsumption(proof::Tracer_wrapper tracer = {}) : tracer(tracer) {}
+
     /** Allocate memory for internal structures.
      *
      * @param type type of variables
@@ -81,6 +84,8 @@ private:
     Literal_map<bool> lit_bitset;
     // number of learned clauses in previous restart
     std::size_t old_size = 0;
+    // Tracer for proof production (optional)
+    proof::Tracer_wrapper tracer;
 
     // compute signature of a clause and create a proxy object which includes
     // this signature

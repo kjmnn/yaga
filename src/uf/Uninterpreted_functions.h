@@ -12,6 +12,7 @@
 #include "Term_manager.h"
 #include "Term_types.h"
 #include "Theory.h"
+#include "Tracer_wrapper.h"
 #include "Trail.h"
 
 namespace yaga{
@@ -24,7 +25,8 @@ public:
 
     Uninterpreted_functions(terms::Term_manager const& term_manager,
                             std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, int>> rational_vars,
-                            std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal>> bool_vars);
+                            std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal>> bool_vars,
+                            proof::Tracer_wrapper tracer = {});
 
     /** Propagate literals to trail. In the case of conflicting function value assignments return a
      * conflict clause.
@@ -129,6 +131,7 @@ private:
     std::unordered_map<terms::term_t, function_application_map_t> functions;
     std::unordered_map<terms::term_t, function_value_map_t> model;
     Yaga* solver;
+    proof::Tracer_wrapper tracer;
 
     /** Evaluate term @p t with respect to current @p trail
      *

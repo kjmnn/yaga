@@ -18,12 +18,12 @@ void print_help()
     std::cerr << "   --prop-rational: decide rational variables with only one allowed value first.\n";
     std::cerr << "   --deduce-bounds: derive new bounds in LRA using Fourier-Motzkin elimination.\n";
     std::cerr << "   --phase [positive|negative|cache]: value selection strategy for Boolean variables.\n";
+    // TODO: add help for proof production options
 }
 
 int main(int argc, char** argv)
 {
     Options options;
-    std::string input_path;
     for (int i = 1; i < argc; ++i)
     {
         std::string arg{argv[i]};
@@ -58,6 +58,12 @@ int main(int argc, char** argv)
                 }
             }
         }
+        else if (arg == "--frat")
+        {
+            std::cerr << "Producing FRAT" << std::endl; // TODO remove
+            options.produce_proofs = true;
+            options.proof_format = Options::Proof_format::frat_ascii;
+        }
         else if (arg.starts_with("-"))
         {
             std::cerr << "Unrecognized option: '" << arg << "'\n";
@@ -66,11 +72,11 @@ int main(int argc, char** argv)
         } 
         else
         {
-            input_path = arg;
+            options.input_path = arg;
         }
     }
 
-    if (input_path.empty())
+    if (options.input_path.empty())
     {
         print_help();
         return -1;
@@ -80,11 +86,11 @@ int main(int argc, char** argv)
     {
         parser::Smt2_parser parser;
         parser.set_options(options);
-        parser.parse_file(input_path);
+        parser.parse_file(options.input_path);
     }
     catch (std::ifstream::failure& e)
     {
-        std::cerr << "Error: failed to open the input file '" << input_path << "'\n";
+        std::cerr << "Error: failed to open the input file '" << options.input_path << "'\n";
     }
     catch (std::exception& e) 
     {

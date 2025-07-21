@@ -7,7 +7,7 @@ namespace yaga {
 void Propositional::setup(Yaga* yaga, Options const& options) const
 {
     yaga->solver().trail().set_model<bool>(Variable::boolean, 0);
-    auto& bcp = yaga->solver().set_theory<Bool_theory>();
+    auto& bcp = yaga->solver().set_theory<Bool_theory>(yaga->solver().tracer());
     bcp.set_phase(options.phase);
     yaga->solver().set_restart_policy<Glucose_restart>();
     yaga->solver().set_variable_order<Evsids>();
@@ -19,13 +19,13 @@ void Qf_lra::setup(Yaga* yaga, Options const& options) const
     yaga->solver().trail().set_model<Rational>(Variable::rational, 0);
     // create plugins
     auto& theories = yaga->solver().set_theory<Theory_combination>();
-    auto& bcp = theories.add_theory<Bool_theory>();
+    auto& bcp = theories.add_theory<Bool_theory>(yaga->solver().tracer());
     bcp.set_phase(options.phase);
 
     Linear_arithmetic::Options lra_options;
     lra_options.prop_rational = options.prop_rational;
     lra_options.prop_bounds = options.deduce_bounds;
-    auto& lra = theories.add_theory<Linear_arithmetic>();
+    auto& lra = theories.add_theory<Linear_arithmetic>(yaga->solver().tracer());
     lra.set_options(lra_options);
 
     // add heuristics
@@ -39,16 +39,17 @@ void Qf_uflra::setup(Yaga* yaga, Options const& options) const
     yaga->solver().trail().set_model<Rational>(Variable::rational, 0);
     // create plugins
     auto& theories = yaga->solver().set_theory<Theory_combination>();
-    auto& bcp = theories.add_theory<Bool_theory>();
+    auto& bcp = theories.add_theory<Bool_theory>(yaga->solver().tracer());
     bcp.set_phase(options.phase);
 
     Linear_arithmetic::Options lra_options;
     lra_options.prop_rational = options.prop_rational;
     lra_options.prop_bounds = options.deduce_bounds;
-    auto& lra = theories.add_theory<Linear_arithmetic>();
+    auto& lra = theories.add_theory<Linear_arithmetic>(yaga->solver().tracer());
     lra.set_options(lra_options);
 
-    theories.add_theory<Uninterpreted_functions>(yaga->solver().tm(), yaga->real_vars(), yaga->bool_vars());
+    theories.add_theory<Uninterpreted_functions>(yaga->solver().tm(), yaga->real_vars(),
+                                                 yaga->bool_vars(), yaga->solver().tracer());
 
     // add heuristics
     yaga->solver().set_restart_policy<Glucose_restart>();
@@ -57,8 +58,9 @@ void Qf_uflra::setup(Yaga* yaga, Options const& options) const
 
 Yaga::Yaga(terms::Term_manager const& tm,
            std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, int> > r_m,
-           std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > b_m)
-    : smt(tm), real_mapping(r_m), bool_mapping(b_m) { init(); }
+           std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > b_m,
+           proof::Tracer_wrapper tracer)
+    : smt(tm, tracer), real_mapping(r_m), bool_mapping(b_m) { init(); }
 
 void Yaga::init()
 {

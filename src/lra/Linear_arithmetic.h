@@ -16,6 +16,7 @@
 #include "Lra_conflict_analysis.h"
 #include "Model.h"
 #include "Theory.h"
+#include "Tracer_wrapper.h"
 #include "Variable_bounds.h"
 
 namespace yaga {
@@ -52,6 +53,8 @@ public:
          */
         bool prop_rational = false;
     };
+
+    Linear_arithmetic(proof::Tracer_wrapper tracer = {}) : tracer_(tracer) {}
 
     virtual ~Linear_arithmetic() = default;
 
@@ -189,6 +192,9 @@ public:
         decided.clear();
         return result;
     }
+
+    proof::Tracer_wrapper& tracer() { return tracer_; }
+
 private:
     struct Watched_constraint {
         // watched constraint
@@ -218,6 +224,8 @@ private:
     Options options;
     // unassigned rational variables with only one allowed value
     std::vector<int> decided;
+    // tracer for proof production (optional)
+    proof::Tracer_wrapper tracer_;
 
     /** Start watching LRA variables in @p cons
      *

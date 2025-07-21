@@ -17,6 +17,7 @@
 #include "Term_types.h"
 #include "Theory.h"
 #include "Theory_combination.h"
+#include "Tracer_wrapper.h"
 #include "uf/Uninterpreted_functions.h"
 #include "Variable.h"
 #include "Variable_order.h"
@@ -124,7 +125,8 @@ public:
      */
     Yaga(terms::Term_manager const& tm,
          std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, int> > b_m,
-         std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > r_m);
+         std::ranges::ref_view<std::unordered_map<yaga::terms::term_t, Literal> > r_m,
+         proof::Tracer_wrapper tracer = {});
 
     /** Reinitialize the solver with a different logic.
      * 

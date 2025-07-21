@@ -20,6 +20,7 @@
 #include "Term_manager.h"
 #include "Theory.h"
 #include "Trail.h"
+#include "Tracer_wrapper.h"
 #include "Variable.h"
 #include "Variable_order.h"
 
@@ -30,7 +31,7 @@ public:
     enum class Result { unsat = 0, sat = 1 };
 
     Solver();
-    Solver(const terms::Term_manager& tm);
+    Solver(const terms::Term_manager& tm, proof::Tracer_wrapper tracer = {});
 
     // non-copyable
     Solver(Solver const&) = delete;
@@ -174,6 +175,8 @@ public:
      */
     inline Theory* theory() { return solver_theory.get(); }
 
+    inline proof::Tracer_wrapper& tracer() { return tracer_; }
+
 private:
     Event_dispatcher dispatcher;
     Trail solver_trail;
@@ -184,6 +187,7 @@ private:
     std::unique_ptr<Restart> restart_policy;
     std::unique_ptr<Variable_order> variable_order;
     const terms::Term_manager& term_manager;
+    proof::Tracer_wrapper tracer_;
     int num_bool_vars = 0;
 
     using Clause_iterator = std::deque<Clause>::iterator;

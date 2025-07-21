@@ -8,9 +8,9 @@ namespace yaga::parser
 using term_t = terms::term_t;
 
 Solver_wrapper::Solver_wrapper(terms::Term_manager& term_manager, Options const& opts)
-    : term_manager(term_manager), options(opts),
+    : term_manager(term_manager), options(opts), tracer(opts),
       internalizer_config(term_manager, solver), internalizer(term_manager, internalizer_config),
-      solver(term_manager, internalizer_config.rational_vars(), internalizer_config.bool_vars()) {}
+      solver(term_manager, internalizer_config.rational_vars(), internalizer_config.bool_vars(), tracer) {}
 
 void Solver_wrapper::set_logic(Initializer const& init) {
     solver.set_logic(init, options);
@@ -24,6 +24,7 @@ Solver_answer Solver_wrapper::check(std::vector<term_t> const& assertions)
 {
     if (std::ranges::any_of(assertions, [](term_t t) { return t == terms::false_term; }))
     {
+        tracer.trivial_proof();
         return Solver_answer::UNSAT;
     }
 

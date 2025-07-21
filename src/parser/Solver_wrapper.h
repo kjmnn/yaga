@@ -10,6 +10,7 @@
 #include "Term_manager.h"
 #include "Term_types.h"
 #include "Term_visitor.h"
+#include "Tracer_wrapper.h"
 #include "Variable.h"
 #include "Yaga.h"
 
@@ -125,6 +126,8 @@ class Solver_wrapper
     terms::Term_manager& term_manager;
     Options const& options;
     std::unordered_map<terms::term_t, Variable> variables;
+
+    proof::Tracer_wrapper tracer;
 
     Internalizer_config internalizer_config;
     terms::Visitor<Internalizer_config> internalizer;
